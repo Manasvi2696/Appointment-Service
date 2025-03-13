@@ -5,10 +5,13 @@ import java.util.List;
 
 import org.healthcare.appointment.entity.Appointment;
 import org.healthcare.appointment.exception.AppointmentNotFoundException;
+import org.healthcare.appointment.openfeign.OpenfeignClientDoctor;
+import org.healthcare.appointment.openfeign.OpenfeignClientPatient;
 import org.healthcare.appointment.service.impl.AppointmentServiceImpl;
 import org.healthcare.doctor.dto.Doctor;
 import org.healthcare.patient.dto.Patient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,6 +32,14 @@ public class AppointmentRestController {
 	
 	@Autowired
 	private AppointmentServiceImpl service;
+	@Value("${app.patient.url}")
+	private String patientUrl;
+	@Value("${app.doctor.url}")
+	private String doctorUrl;
+	@Autowired
+	private OpenfeignClientDoctor doctorclient;
+	@Autowired
+	private OpenfeignClientPatient patientClient;
 	
 	@ResponseStatus(code=HttpStatus.OK)
 	@GetMapping
@@ -60,10 +71,15 @@ public class AppointmentRestController {
 		Appointment a = service.getById(id);
 		System.out.println(a);
 		int patientId = a.getPatientId();
-		Patient p = RestClient.create("http://localhost:8090/api/patient/"+patientId)
-		.get()
-		.retrieve()
-		.body(Patient.class);
+		
+//		-------Using RestClient-----
+//		Patient p = RestClient.create(patientUrl+patientId)
+//		.get()
+//		.retrieve()
+//		.body(Patient.class);
+		
+//		-------Using SpringCloud-----
+		Patient p = patientClient.findById(patientId);
 		return p;
 	}
 	
@@ -73,10 +89,16 @@ public class AppointmentRestController {
 		Appointment a = service.getById(id);
 		System.out.println(a);
 		int doctorId = a.getDoctorId();
-		Doctor d = RestClient.create("http://localhost:8091/api/doctor/"+doctorId)
-		.get()
-		.retrieve()
-		.body(Doctor.class);
+		
+//		---Using RestClient---
+//		Doctor d = RestClient.create(doctorUrl+doctorId)
+//		.get()
+//		.retrieve()
+//		.body(Doctor.class);
+		
+//		---Using Spring Cloud---
+		Doctor d = doctorclient.getById(doctorId);
+		
 		return d;
 	}	
 	
@@ -90,15 +112,23 @@ public class AppointmentRestController {
 			int doctorId = a1.getDoctorId();
 			System.out.println(patientId);
 			System.out.println(doctorId);
-			Patient p = RestClient.create("http://localhost:8090/api/patient/"+patientId)
-			.get()
-			.retrieve()
-			.body(Patient.class);
+			
+//		---- Using RestClient---
+//			Patient p = RestClient.create(patientUrl+patientId)
+//			.get()
+//			.retrieve()
+//			.body(Patient.class);
+//			System.out.println(p);
+//			Doctor d = RestClient.create(doctorUrl+doctorId)
+//					.get()
+//					.retrieve()
+//					.body(Doctor.class);
+//			System.out.println(d);
+			
+//		---Using Spring cloud----
+			Patient p = patientClient.findById(patientId);
 			System.out.println(p);
-			Doctor d = RestClient.create("http://localhost:8091/api/doctor/"+doctorId)
-					.get()
-					.retrieve()
-					.body(Doctor.class);
+			Doctor d = doctorclient.getById(doctorId);
 			System.out.println(d);
 		a1.setPatient(p);
 		a1.setDoctor(d);
@@ -113,10 +143,15 @@ public class AppointmentRestController {
 		System.out.println(a);
 		 int patientId = a.getPatientId();
 		 
-		 Patient p = RestClient.create("http://localhost:8090/api/patient/"+patientId)
-				 .get()
-				 .retrieve()
-				 .body(Patient.class);
+//		 ----Using RestClient----
+//		 Patient p = RestClient.create(patientUrl+patientId)
+//				 .get()
+//				 .retrieve()
+//				 .body(Patient.class);
+		 
+//		----Using Spring Cloud---
+		 Patient p = patientClient.findById(patientId);
+		 
 		 a.setPatient(p);
 		 System.out.println(a);
 		return a;
@@ -129,10 +164,14 @@ public class AppointmentRestController {
 		System.out.println(a);
 		 int doctorId = a.getDoctorId();
 		 
-		 Doctor d = RestClient.create("http://localhost:8091/api/doctor/"+doctorId)
-				 .get()
-				 .retrieve()
-				 .body(Doctor.class);
+//		 ----Using RestClient----
+//		 Doctor d = RestClient.create(doctorUrl+doctorId)
+//				 .get()
+//				 .retrieve()
+//				 .body(Doctor.class);
+		 
+//		----Using Spring cloud----
+		 Doctor d = doctorclient.getById(doctorId);
 		 
 		 a.setDoctor(d);
 		 System.out.println(a);
